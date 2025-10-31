@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Latihan Tes Silogisme - 15 Soal</title>
+  <style>
+    :root{
+      --bg:#f8f8f8; --card:#fff; --primary:#2d8cf0; --danger:#e74c3c;
+      --ok:#2ecc71; --bad:#ff7b7b;
+    }
+    html,body{height:100%;margin:0;font-family:Arial,Helvetica,sans-serif;background:var(--bg);overflow-y:auto}
+    .wrap{max-width:820px;margin:36px auto;padding:20px}
+    .card{background:var(--card);border-radius:10px;padding:22px;box-shadow:0 6px 18px rgba(0,0,0,0.08)}
+    .header{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+    .timer{font-weight:700;color:var(--danger)}
+    .meta-soal{color:#2d8cf0;font-weight:700;margin-bottom:8px}
+    .soal-text{font-weight:600;margin-bottom:12px;white-space:pre-line}
+    .options label{display:block;margin:8px 0;cursor:pointer}
+    #nextButton{margin-top:12px;padding:8px 14px;border:0;background:var(--primary);color:#fff;border-radius:6px;cursor:pointer}
+    #nextButton.hidden{display:none}
+    #result{margin-top:18px}
+    .review-item{padding:10px;border-radius:8px;margin-bottom:10px}
+    .ok{background:rgba(46,204,113,0.12);border:1px solid rgba(46,204,113,0.2)}
+    .bad{background:rgba(255,123,123,0.12);border:1px solid rgba(255,123,123,0.2)}
+    .meta{font-size:13px;color:#444;margin-top:6px}
+    .controls{margin-top:12px}
+    .btn-restart{background:#27ae60;color:#fff;padding:8px 12px;border-radius:6px;border:0;cursor:pointer}
+    .small-note{font-size:13px;color:#666}
+    a.link-pembahasan{display:inline-block;margin-top:12px;color:var(--primary);font-weight:700}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <div id="quizArea">
+        <div class="header">
+          <div><strong>Latihan Tes Silogisme - 15 Soal</strong></div>
+          <div class="timer">Waktu: <span id="timer">30</span>s</div>
+        </div>
+
+        <div id="nomor" class="meta-soal">Soal 1</div>
+        <div id="question" class="soal-text">Memuat soal...</div>
+        <div id="options" class="options"></div>
+        <div class="controls">
+          <button id="nextButton" onclick="manualNext()">Next</button>
+        </div>
+        <div class="small-note">Nomor soal dipisah agar tidak tercampur dengan teks soal.</div>
+      </div>
+
+      <div id="result" class="hidden"></div>
+    </div>
+  </div>
+
+  <script>
+    // Quiz data: 15 soal silogisme (teks premis digabung, tanpa label "Premis:")
+    // ans = 0..4 (A..E)
+    const quizData = [
+      {
+        num:1,
+        text:
+`Jika bulan depan penjualan melonjak maka karyawan mendapat bonus.
+Jika pemasaran berhasil dalam event itu maka bulan depan penjualan melonjak.`,
+        opts:[
+          'Jika tidak ada pemasaran maka penjualan tidak berjalan.',
+          'Jika tidak ada bonus maka bulan depan penjualan tidak melonjak.',
+          'Jika karyawan mendapat bonus maka pemasaran berhasil dalam event itu.',
+          'Jika karyawan mendapat bonus maka perusahaan tidak mendapatkan keuntungan.',
+          'Jika bulan depan penjualan melonjak maka event itu berhasil.'
+        ],
+        ans:2
+      },
+      {
+        num:2,
+        text:
+`Semua tanaman hias yang disukai memiliki bunga yang indah.
+Tanaman hias dengan bunga yang indah dianggap berharga oleh para kolektor.
+Tanaman itu tidak memiliki bunga yang indah.`,
+        opts:[
+          'Semua tanaman hias yang memiliki bunga yang indah disukai.',
+          'Semua yang disukai dan memiliki bunga yang indah adalah tanaman hias.',
+          'Tanaman tersebut tidak disukai.',
+          'Tanaman tersebut memiliki bunga yang indah.',
+          'Tanaman tersebut tidak memiliki bunga'
+        ],
+        ans:2
+      },
+      {
+        num:3,
+        text:
+`Setiap peserta seminar menerima print out yang berisi materi dari pembicara.
+Saya tidak menerima print out yang berisi materi dari pembicara.`,
+        opts:[
+          'Saya bukan peserta seminar.',
+          'Print out yang berisi materi dari pembicara hanya untuk sebagian peserta seminar.',
+          'Tidak semua peserta seminar menerima print out yang berisi materi dari pembicara.',
+          'Ada peserta seminar yang tidak menerima print out yang berisi materi dari pembicara.',
+          'Saya tidak datang seminar.'
+        ],
+        ans:0
+      },
+      {
+        num:4,
+        text:
+`Jika Susi sakit, maka ia memakai jaket.
+Jika Susi memakai jaket maka ia minum obat.
+Kemarin Susi tidak minum obat.`,
+        opts:[
+          'Susi memakai jaket karena kedinginan',
+          'Hari ini Susi tidak minum obat',
+          'Susi minum obat agar tidak sakit',
+          'Susi memakai jaket karena sakit',
+          'Kemarin Susi tidak sakit'
+        ],
+        ans:4
+      },
+      {
+        num:5,
+        text:
+`Semua penduduk miskin ditanggung biaya berobatnya oleh pemerintah.
+Pak Somad membayar sendiri biaya pengobatannya.`,
+        opts:[
+          'Pemerintah tidak mengetahui Pak Somad sakit.',
+          'Pemerintah mengabaikan Pak Somad.',
+          'Sebagian penduduk miskin tidak ingin ditanggung biaya berobatnya oleh pemerintah.',
+          'Pak Somad bukan termasuk penduduk miskin.',
+          'Pak Somad tidak ingin ditanggung biaya berobatnya oleh pemerintah.'
+        ],
+        ans:3
+      },
+      {
+        num:6,
+        text:
+`Jika saya jadi mendaki gunung maka saya akan membeli sepatu gunung.
+Jika saya membeli sepatu gunung maka saya membongkar celengan.`,
+        opts:[
+          'Tidak jadi mendaki gunung karena harus membongkar celengan.',
+          'Saya jadi mendaki gunung.',
+          'Membeli sepatu gunung tidak harus membongkar celengan.',
+          'Saya membongkar celengan.',
+          'Jika saya jadi mendaki gunung maka saya membongkar celengan.'
+        ],
+        ans:4
+      },
+      {
+        num:7,
+        text:
+`Pohon anggur dapat berbuah dengan baik jika dirawat dan disiram.
+Finda punya pohon anggur.
+Finda selalu menyiram dan merawat pohon anggurnya.`,
+        opts:[
+          'Pohon anggur di kebun Finda dapat berbuah dengan baik',
+          'Buah anggur di kebun Finda rasanya manis dan segar',
+          'Pohon anggur Finda tidak berbuah',
+          'Pohon yang berbuah tentu disiram setiap hari',
+          'Finda pandai berkebun'
+        ],
+        ans:0
+      },
+      {
+        num:8,
+        text:
+`Setiap siswa yang lulus SMA akan menerima ijazah.
+Dafa lulus SMA tahun ini.`,
+        opts:[
+          'Dafa akan menerima ijazah tahun ini.',
+          'Dafa sudah menerima ijazah dan kuliah.',
+          'Tidak ada siswa yang tidak menerima ijazah.',
+          'Dafa tidak akan menerima ijazah tahun ini.',
+          'Dafa adalah pelajar SMA.'
+        ],
+        ans:0
+      },
+      {
+        num:9,
+        text:
+`Pimpinan meminta karyawan menyerahkan laporan kegiatan jika kegiatan telah dilaksanakan.
+Jika laporan kegiatan telah diserahkan, honor karyawan dibayarkan.`,
+        opts:[
+          'Jika honor kegiatan dibayarkan, pimpinan dapat menugaskan karyawan membuat laporan',
+          'Laporan kegiatan belum diserahkan berarti honor pimpinan tidak dibayarkan',
+          'Jika pimpinan minta laporan, kegiatan segera dilaksanakan',
+          'Honor karyawan tidak dibayarkan berarti kegiatan belum dilaksanakan',
+          'Jika honor tidak ada, kegiatan tidak dapat dilaksanakan'
+        ],
+        ans:3
+      },
+      {
+        num:10,
+        text:
+`Jika pagi hari sudah hujan maka Winda mengendarai mobil ke kantor.
+Jika bensin habis maka Winda pergi ke pom bensin.
+Winda tidak mengendarai mobil ke kantor atau Winda tidak pergi ke pom bensin.`,
+        opts:[
+          'Winda pergi ke pom bensin ketika pagi hari sudah hujan.',
+          'Pagi hari tidak hujan maka Winda tidak mengendarai mobil ke kantor.',
+          'Pagi hari tidak hujan atau bensin tidak habis.',
+          'Bensin tidak habis maka Winda tidak pergi ke pom bensin.',
+          'Winda pergi ke pom bensin dan mengendarai mobil ke kantor.'
+        ],
+        ans:2
+      },
+      {
+        num:11,
+        text:
+`Winda akan memberikan pelatihan tari budaya hari ini jika dua minggu lagi akan diadakan pertunjukan seni.
+Jika Winda memberi pelatihan tari budaya hari ini, kostum penari akan segera disiapkan.
+Ternyata kostum tidak sedang disiapkan.`,
+        opts:[
+          'Winda tidak memberikan pelatihan tari budaya hari ini',
+          'Dua minggu lagi tidak akan diadakan pertunjukan seni',
+          'Jika Winda tidak memberikan pelatihan maka tidak akan diadakan pertunjukan seni',
+          'Jika Winda tidak memberikan pelatihan tari maka kostum tidak akan disiapkan',
+          'Kostum penari belum disiapkan'
+        ],
+        ans:1
+      },
+      {
+        num:12,
+        text:
+`Jika kehujanan maka baju basah kuyup.
+Jika sarapan pagi maka badan menjadi kuat.
+Kehujanan atau badan menjadi tidak kuat.`,
+        opts:[
+          'Baju basah kuyup dan sarapan pagi.',
+          'Baju basah kuyup atau tidak sarapan pagi.',
+          'Baju tidak basah kuyup atau sarapan pagi.',
+          'Tidak kehujanan maka baju tidak basah kuyup.',
+          'Tidak sarapan maka badan menjadi tidak kuat.'
+        ],
+        ans:1
+      },
+      {
+        num:13,
+        text:
+`Semua karyawan perusahaan X mendapat pemotongan upah jika tidak bekerja dengan baik.
+Tidak satupun karyawan perusahaan X yang mendapat pemotongan upah.`,
+        opts:[
+          'Semua karyawan perusahaan X tidak bekerja dengan baik sehingga mendapat pemotongan upah.',
+          'Tidak satupun karyawan Perusahaan X yang bekerja dengan baik.',
+          'Semua karyawan Perusahaan X bekerja dengan baik dan mendapat pemotongan gaji.',
+          'Semua karyawan Perusahaan X bekerja dengan baik.',
+          'Semua karyawan Perusahaan X mendapat pemotongan upah.'
+        ],
+        ans:3
+      },
+      {
+        num:14,
+        text:
+`Jika dinding terlihat kusam maka dinding dicat kembali.
+Jika lantai terlihat kotor maka lantai dibersihkan dengan kain pel.
+Dinding terlihat kusam atau lantai tidak dibersihkan dengan kain pel.`,
+        opts:[
+          'Dinding dicat kembali atau lantai terlihat tidak kotor.',
+          'Dinding dicat kembali dan lantai terlihat tidak kotor.',
+          'Dinding terlihat tidak kusam atau lantai dibersihkan dengan kain pel.',
+          'Lantai terlihat kotor dan dinding terlihat kusam.',
+          'Lantai terlihat tidak kotor atau dinding tidak dicat kembali.'
+        ],
+        ans:0
+      },
+      {
+        num:15,
+        text:
+`Semua penulis berbakat sering menggunakan komputer dengan spesifikasi tinggi.
+Komputer dengan spesifikasi tinggi biasanya membantu penulis menghasilkan karya terbaik.
+Andi berhasil memenangkan penghargaan penulisan.`,
+        opts:[
+          'Semua penulis berbakat pasti memenangkan penghargaan.',
+          'Andi mungkin penulis yang menggunakan komputer dengan spesifikasi tinggi.',
+          'Beberapa penulis menggunakan komputer dengan spesifikasi rendah untuk menulis karya.',
+          'Andi memenangkan penghargaan karena semua penulis berbakat menggunakan komputer dengan spesifikasi tinggi.',
+          'Semua penulis tidak memenangkan penghargaan karena menggunakan komputer dengan spesifikasi rendah.'
+        ],
+        ans:1
+      }
+    ];
+
+    // link pembahasan (file yang diupload)
+    const pembahasanLink = 'sandbox:/mnt/data/Tes Silogisme.pdf';
+
+    let idx = 0;
+    let timeLeft = 30;
+    let tmr = null;
+    const userAns = [];
+
+    const elNomor = document.getElementById('nomor');
+    const elQ = document.getElementById('question');
+    const elOptions = document.getElementById('options');
+    const elTimer = document.getElementById('timer');
+    const elNext = document.getElementById('nextButton');
+    const elResult = document.getElementById('result');
+
+    function resetRadios(){
+      const r = document.getElementsByName('opt');
+      if(r) r.forEach(x=>x.checked=false);
+    }
+
+    function renderQuestion(){
+      clearInterval(tmr);
+      timeLeft = 30;
+      elTimer.textContent = timeLeft;
+      const data = quizData[idx];
+      elNomor.textContent = 'Soal ' + data.num;
+      elQ.textContent = data.text;
+      elOptions.innerHTML = '';
+      data.opts.forEach((o,i)=>{
+        const id = `q${idx}_o${i}`;
+        const lab = document.createElement('label');
+        lab.innerHTML = `<input name='opt' id='${id}' type='radio' value='${i}'> ${String.fromCharCode(65+i)}. ${o}`;
+        elOptions.appendChild(lab);
+      });
+      elNext.classList.remove('hidden');
+      resetRadios();
+      tmr = setInterval(()=>{ timeLeft--; elTimer.textContent = timeLeft; if(timeLeft<=0){ autoNext(); } },1000);
+    }
+
+    function saveAnswer(){
+      const sel = document.querySelector("input[name='opt']:checked");
+      userAns[idx] = sel?parseInt(sel.value):null;
+    }
+
+    function autoNext(){ clearInterval(tmr); saveAnswer(); idx++; if(idx<quizData.length) renderQuestion(); else showResults(); }
+    function manualNext(){ clearInterval(tmr); saveAnswer(); idx++; if(idx<quizData.length) renderQuestion(); else showResults(); }
+
+    function showResults(){
+      clearInterval(tmr);
+      document.getElementById('quizArea').classList.add('hidden');
+      elResult.classList.remove('hidden');
+      document.body.style.overflowY = 'auto';
+
+      // count correct
+      let correct = 0; quizData.forEach((q,i)=>{ if(userAns[i]===q.ans) correct++; });
+
+      let out = `<h2>Latihan Selesai</h2><p>Jumlah jawaban benar: ${correct}/${quizData.length}</p><hr>`;
+      out += `<a class='link-pembahasan' href='${pembahasanLink}' target='_blank'>Lihat pembahasan lengkap (PDF)</a>`;
+      out += '<h3>Review Jawaban</h3>';
+      quizData.forEach((q,i)=>{
+        const ua = userAns[i]===null||userAns[i]===undefined? 'Tidak dijawab' : `${String.fromCharCode(65+userAns[i])}. ${q.opts[userAns[i]]}`;
+        const ca = `${String.fromCharCode(65+q.ans)}. ${q.opts[q.ans]}`;
+        const isCorrect = userAns[i]===q.ans;
+        out += `<div class="review-item ${isCorrect? 'ok':'bad'}">`;
+        out += `<div><strong>Soal ${q.num}</strong></div>`;
+        out += `<div class="meta">Pertanyaan: ${q.text}</div>`;
+        out += `<div class="meta">Jawaban kamu: ${ua}</div>`;
+        out += `<div class="meta">Kunci: ${ca}</div>`;
+        out += `</div>`;
+      });
+
+      out += `<div style='margin-top:12px'><button class='btn-restart' onclick='restart()'>Mulai Ulang Tes</button></div>`;
+      elResult.innerHTML = out;
+      window.scrollTo({top:0,behavior:'smooth'});
+    }
+
+    function restart(){ idx=0; userAns.length=0; elResult.classList.add('hidden'); document.getElementById('quizArea').classList.remove('hidden'); renderQuestion(); }
+
+    // start
+    renderQuestion();
+  </script>
+</body>
+</html>
